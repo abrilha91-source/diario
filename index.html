@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#7a5c9e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mi diario">
+<title>Mi diario</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/NotoSans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== Candado ===== -->
+<section id="lock" class="screen lock" hidden>
+  <div class="lock-card">
+    <img src="icons/icon-192.png" alt="" class="lock-logo">
+    <h1 id="lockTitle">Hola, mi Cap.</h1>
+    <p id="lockMsg" class="muted">Escribe tu PIN para abrir tu diario.</p>
+    <div class="pin-dots" id="pinDots"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <input id="pinInput" class="pin-input" type="password" inputmode="numeric" autocomplete="off" pattern="[0-9]*" maxlength="8" aria-label="PIN">
+    <div class="keypad" id="keypad">
+      <button>1</button><button>2</button><button>3</button>
+      <button>4</button><button>5</button><button>6</button>
+      <button>7</button><button>8</button><button>9</button>
+      <button data-k="del" aria-label="Borrar">⌫</button><button>0</button><button data-k="ok" class="ok" aria-label="Entrar">✓</button>
+    </div>
+    <p id="pinError" class="error" role="alert"></p>
+    <button id="forgotPin" class="link small" hidden>Olvidé mi PIN</button>
+  </div>
+</section>
+
+<!-- ===== App ===== -->
+<div id="app" hidden>
+  <header class="topbar">
+    <div>
+      <h1 class="brand">Mi diario</h1>
+      <p class="today" id="todayLabel"></p>
+    </div>
+    <button id="lockNow" class="icon-btn" title="Bloquear" aria-label="Bloquear">🔒</button>
+  </header>
+
+  <div id="backupBanner" class="banner" hidden></div>
+  <div id="updateBanner" class="banner soft" hidden>Hay una versión nueva de la app. <button class="link" id="reloadApp">Actualizar</button></div>
+
+  <main>
+    <!-- Inicio / línea de tiempo -->
+    <section id="view-inicio" class="view">
+      <p class="greeting" id="greeting"></p>
+      <div class="quick">
+        <button class="quick-btn" data-new="texto"><span>✍️</span>Escribir</button>
+        <button class="quick-btn" data-new="audio"><span>🎙️</span>Grabar audio</button>
+        <button class="quick-btn" data-new="foto"><span>📷</span>Fotos</button>
+      </div>
+      <div class="searchbar">
+        <input id="search" type="search" placeholder="Buscar en mi diario…" aria-label="Buscar">
+        <div class="chips" id="filters">
+          <button class="chip active" data-f="todo">Todo</button>
+          <button class="chip" data-f="texto">Texto</button>
+          <button class="chip" data-f="audio">Audio</button>
+          <button class="chip" data-f="foto">Foto</button>
+        </div>
+      </div>
+      <div id="timeline" class="timeline"></div>
+      <div id="emptyState" class="empty" hidden>
+        <p class="big">🤍</p>
+        <p>Tu diario está vacío por ahora, mi Cap.</p>
+        <p class="muted">Cuando quieras, escribe, graba un audio o guarda tus fotos. Todo se queda solo en este teléfono.</p>
+        <button class="btn" id="openGuideFromEmpty">Ver la guía rápida</button>
+      </div>
+    </section>
+
+    <!-- Galería -->
+    <section id="view-galeria" class="view" hidden>
+      <h2>Galería</h2>
+      <p class="muted">Guarda aquí tus fotos para poder borrarlas de tu teléfono. <strong>Antes de borrarlas, haz un respaldo</strong> (pestaña «Más»).</p>
+      <div class="row">
+        <button class="btn" id="addGalleryPhotos">➕ Agregar fotos</button>
+        <label class="toggle"><input type="checkbox" id="galleryCompress"> Comprimir (ahorra espacio)</label>
+      </div>
+      <p class="muted small" id="galleryCount"></p>
+      <div id="gallery" class="grid"></div>
+    </section>
+
+    <!-- Respira -->
+    <section id="view-respira" class="view" hidden>
+      <h2>Respira conmigo</h2>
+      <p class="muted">Respiración 4‑7‑8: inhala 4 segundos, sostén 7, exhala 8. Cuatro ciclos bastan. Si te mareas, respira normal.</p>
+      <div class="breath-wrap">
+        <div class="breath-circle" id="breathCircle"><span id="breathText">Toca «Empezar»</span><small id="breathCount"></small></div>
+      </div>
+      <div class="row center">
+        <button class="btn" id="breathStart">Empezar</button>
+        <button class="btn ghost" id="breathStop" hidden>Detener</button>
+      </div>
+      <div class="support card">
+        <h3>No estás sola, mi Cap. 🤍</h3>
+        <p>Si sientes que no puedes con esto o tienes pensamientos de hacerte daño, por favor busca ayuda ahora:</p>
+        <p class="hotline"><strong>Línea de la Vida</strong> (México, gratuita, 24 h)<br><a href="tel:8009112000" class="tel">📞 800 911 2000</a></p>
+        <p>En una emergencia, llama al <a href="tel:911" class="tel-inline">911</a>.</p>
+        <p class="muted">También ayuda mucho hablar con alguien de tu confianza o con un profesional de salud mental (psicología o psiquiatría, incluida la atención que te corresponde por tu servicio de sanidad). Pedir apoyo también es valentía.</p>
+      </div>
+    </section>
+
+    <!-- Más -->
+    <section id="view-mas" class="view" hidden>
+      <h2>Respaldo</h2>
+      <div class="card">
+        <p id="backupStatus"></p>
+        <p id="storageInfo" class="muted small"></p>
+        <div class="row">
+          <button class="btn" id="exportBtn">⬇️ Exportar respaldo (.zip)</button>
+          <button class="btn ghost" id="importBtn">⬆️ Importar respaldo</button>
+        </div>
+        <div id="progress" class="progress" hidden><div></div><span></span></div>
+        <p class="muted small">El respaldo es un solo archivo .zip con todas tus entradas, audios y fotos en calidad original. Guárdalo en <strong>Archivos / iCloud Drive / Google Drive</strong>. No va cifrado: guárdalo en un lugar privado.</p>
+      </div>
+      <h2>Ayuda y guía</h2>
+      <div class="card">
+        <button class="btn ghost full" id="openGuide">📖 Guía: cómo usar, instalar y respaldar</button>
+        <button class="btn ghost full" id="installBtn" hidden>📲 Instalar en este teléfono</button>
+      </div>
+      <h2>Seguridad</h2>
+      <div class="card">
+        <button class="btn ghost full" id="changePin">🔑 Cambiar PIN</button>
+        <label class="toggle"><input type="checkbox" id="autoLock" checked> Bloquear al salir de la app (después de 1 minuto)</label>
+      </div>
+      <h2>Zona delicada</h2>
+      <div class="card">
+        <button class="btn danger full" id="wipeAll">🗑️ Borrar todo el diario de este teléfono</button>
+      </div>
+      <p class="muted small center">Mi diario · todo se guarda solo en tu teléfono, sin cuentas ni servidores.</p>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-view="inicio" class="active"><span>🏠</span>Inicio</button>
+    <button data-view="galeria"><span>🖼️</span>Galería</button>
+    <button id="tabNew" class="tab-new" aria-label="Nueva entrada"><span>＋</span></button>
+    <button data-view="respira"><span>🌬️</span>Respira</button>
+    <button data-view="mas"><span>⚙️</span>Más</button>
+  </nav>
+</div>
+
+<!-- ===== Editor de entrada ===== -->
+<dialog id="editor" class="sheet">
+  <form method="dialog" id="editorForm">
+    <header class="sheet-head">
+      <button type="button" class="link" id="editorCancel">Cancelar</button>
+      <strong id="editorTitle">Nueva entrada</strong>
+      <button type="button" class="link strong" id="editorSave">Guardar</button>
+    </header>
+    <p class="muted small" id="editorDate"></p>
+    <div class="moods" id="moods" role="radiogroup" aria-label="¿Cómo te sientes?">
+      <span class="muted small">¿Cómo te sientes? (opcional)</span>
+      <div class="mood-row"></div>
+    </div>
+    <input id="entryTitle" class="title-input" placeholder="Título (opcional)" maxlength="120">
+    <textarea id="entryText" placeholder="Escribe lo que traigas en el corazón…" rows="7"></textarea>
+    <div class="row">
+      <button type="button" class="btn ghost small" id="dictateBtn" hidden>🗣️ Dictar (opcional)</button>
+      <span class="muted small" id="dictateStatus"></span>
+    </div>
+
+    <div class="attach">
+      <h4>🎙️ Audios</h4>
+      <div class="row">
+        <button type="button" class="btn" id="recBtn">⏺ Grabar</button>
+        <button type="button" class="btn ghost" id="uploadAudioBtn">📁 Subir audio</button>
+        <span id="recTimer" class="rec-timer" hidden></span>
+      </div>
+      <p id="recNote" class="muted small"></p>
+      <div id="draftAudios" class="list"></div>
+    </div>
+
+    <div class="attach">
+      <h4>📷 Fotos</h4>
+      <div class="row">
+        <button type="button" class="btn" id="addPhotosBtn">➕ Agregar fotos</button>
+        <label class="toggle"><input type="checkbox" id="entryCompress"> Comprimir</label>
+      </div>
+      <div id="draftPhotos" class="grid small"></div>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===== Ver entrada ===== -->
+<dialog id="viewer" class="sheet">
+  <header class="sheet-head">
+    <button type="button" class="link" id="viewerClose">Cerrar</button>
+    <strong>Entrada</strong>
+    <button type="button" class="link" id="viewerEdit">Editar</button>
+  </header>
+  <div id="viewerBody"></div>
+  <button class="btn danger full" id="viewerDelete">🗑️ Borrar esta entrada</button>
+</dialog>
+
+<!-- ===== Ver foto ===== -->
+<dialog id="photoViewer" class="photo-viewer">
+  <img id="photoBig" alt="">
+  <div class="pv-bar">
+    <span id="photoInfo" class="small"></span>
+    <div class="row">
+      <button class="btn ghost small" id="photoDownload">⬇️ Descargar</button>
+      <button class="btn danger small" id="photoDelete">🗑️ Borrar</button>
+      <button class="btn small" id="photoClose">Cerrar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ===== Guía ===== -->
+<dialog id="guide" class="sheet">
+  <header class="sheet-head">
+    <span></span><strong>Guía rápida</strong>
+    <button type="button" class="link" id="guideClose">Cerrar</button>
+  </header>
+  <div class="chips" id="guideTabs">
+    <button class="chip active" data-g="usar">Usar</button>
+    <button class="chip" data-g="iphone">Instalar iPhone</button>
+    <button class="chip" data-g="android">Instalar Android</button>
+    <button class="chip" data-g="respaldo">Respaldo</button>
+  </div>
+  <div class="guide-steps" id="guideSteps"></div>
+  <div class="row between">
+    <button class="btn ghost" id="guidePrev">← Anterior</button>
+    <span class="muted small" id="guidePos"></span>
+    <button class="btn" id="guideNext">Siguiente →</button>
+  </div>
+</dialog>
+
+<!-- ===== Confirmar / avisos ===== -->
+<dialog id="confirmDlg" class="small-dlg">
+  <p id="confirmMsg"></p>
+  <input id="confirmInput" hidden autocomplete="off">
+  <div class="row end">
+    <button class="btn ghost" id="confirmNo">Cancelar</button>
+    <button class="btn" id="confirmYes">Sí</button>
+  </div>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<input type="file" id="fileAudio" accept="audio/*" multiple hidden>
+<input type="file" id="filePhotos" accept="image/*" multiple hidden>
+<input type="file" id="fileBackup" accept=".zip,application/zip" hidden>
+
+<script src="zip.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Mi diario",
+  "short_name": "Mi diario",
+  "description": "Diario privado: escribe, graba audios y guarda fotos. Todo se queda en tu teléfono.",
+  "lang": "es-MX",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f2fa",
+  "theme_color": "#7a5c9e",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
