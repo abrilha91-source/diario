@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es-MX">
+<html lang="es-MX" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -24,8 +24,7 @@
     <img src="icons/icon-192.png" alt="" class="lock-logo">
     <h1 id="lockTitle">Hola, mi Cap.</h1>
     <p id="lockMsg" class="muted">Escribe tu PIN para abrir tu diario.</p>
-    <div class="pin-dots" id="pinDots"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <input id="pinInput" class="pin-input" type="password" inputmode="numeric" autocomplete="off" pattern="[0-9]*" maxlength="8" aria-label="PIN">
+    <div class="pin-dots" id="pinDots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <div class="keypad" id="keypad">
       <button>1</button><button>2</button><button>3</button>
       <button>4</button><button>5</button><button>6</button>
@@ -44,29 +43,55 @@
       <h1 class="brand">Mi diario</h1>
       <p class="today" id="todayLabel"></p>
     </div>
-    <button id="lockNow" class="icon-btn" title="Bloquear" aria-label="Bloquear">🔒</button>
+    <div class="row nogap">
+      <button id="openMas" class="icon-btn" title="Ajustes y respaldo" aria-label="Ajustes y respaldo">⚙️</button>
+      <button id="lockNow" class="icon-btn" title="Bloquear" aria-label="Bloquear">🔒</button>
+    </div>
   </header>
 
+  <div id="updateBanner" class="banner soft" hidden>✨ Hay una nueva versión de tu diario disponible. <button class="btn small" id="reloadApp">Actualizar ahora</button></div>
   <div id="backupBanner" class="banner" hidden></div>
-  <div id="updateBanner" class="banner soft" hidden>Hay una versión nueva de la app. <button class="link" id="reloadApp">Actualizar</button></div>
+  <div id="reminderBanner" class="banner soft" hidden></div>
 
   <main>
-    <!-- Inicio / línea de tiempo -->
+    <!-- ===== Inicio ===== -->
     <section id="view-inicio" class="view">
       <p class="greeting" id="greeting"></p>
-      <div class="quick">
-        <button class="quick-btn" data-new="texto"><span>✍️</span>Escribir</button>
-        <button class="quick-btn" data-new="audio"><span>🎙️</span>Grabar audio</button>
-        <button class="quick-btn" data-new="foto"><span>📷</span>Fotos</button>
+
+      <div id="lowMoodCard" class="card care" hidden></div>
+
+      <div class="home-grid">
+        <button class="card mini" id="checkinCard"></button>
+        <div class="card mini" id="ncCard" hidden></div>
       </div>
+
+      <div class="card prompt-card">
+        <p class="eyebrow">Idea para escribir hoy</p>
+        <p id="dailyPrompt" class="prompt-text"></p>
+        <div class="row">
+          <button class="btn small" id="usePrompt">Escribir sobre esto</button>
+          <button class="btn ghost small" id="morePrompts">Más ideas</button>
+        </div>
+      </div>
+
+      <div class="card affirm-card">
+        <p class="eyebrow">Para ti, mi Cap.</p>
+        <p id="dailyAffirm" class="affirm-text"></p>
+      </div>
+
+      <div id="memories" class="card" hidden></div>
+
       <div class="searchbar">
         <input id="search" type="search" placeholder="Buscar en mi diario…" aria-label="Buscar">
-        <div class="chips" id="filters">
+        <div class="chips scroll" id="filters">
           <button class="chip active" data-f="todo">Todo</button>
+          <button class="chip" data-f="fav">⭐ Favoritas</button>
           <button class="chip" data-f="texto">Texto</button>
           <button class="chip" data-f="audio">Audio</button>
           <button class="chip" data-f="foto">Foto</button>
+          <button class="chip" data-f="carta">✉️ Cartas</button>
         </div>
+        <div class="chips scroll" id="tagFilters"></div>
       </div>
       <div id="timeline" class="timeline"></div>
       <div id="emptyState" class="empty" hidden>
@@ -77,56 +102,125 @@
       </div>
     </section>
 
-    <!-- Galería -->
-    <section id="view-galeria" class="view" hidden>
-      <h2>Galería</h2>
-      <p class="muted">Guarda aquí tus fotos para poder borrarlas de tu teléfono. <strong>Antes de borrarlas, haz un respaldo</strong> (pestaña «Más»).</p>
-      <div class="row">
-        <button class="btn" id="addGalleryPhotos">➕ Agregar fotos</button>
-        <label class="toggle"><input type="checkbox" id="galleryCompress"> Comprimir (ahorra espacio)</label>
+    <!-- ===== Ánimo ===== -->
+    <section id="view-animo" class="view" hidden>
+      <div class="row between">
+        <h2>Mi ánimo</h2>
+        <button class="btn small" id="checkinFromAnimo">＋ Check-in</button>
       </div>
-      <p class="muted small" id="galleryCount"></p>
-      <div id="gallery" class="grid"></div>
+      <div class="stats" id="statsRow"></div>
+      <div class="card">
+        <div class="row between">
+          <button class="icon-btn small" id="calPrev" aria-label="Mes anterior">‹</button>
+          <strong id="calTitle" class="cap"></strong>
+          <button class="icon-btn small" id="calNext" aria-label="Mes siguiente">›</button>
+        </div>
+        <div class="cal" id="calendar"></div>
+        <div class="legend" id="calLegend"></div>
+      </div>
+      <div class="card">
+        <div class="row between"><h3>Cómo me he sentido</h3>
+          <div class="chips"><button class="chip active" data-range="30">30 días</button><button class="chip" data-range="90">90 días</button></div>
+        </div>
+        <div id="moodChart" class="chart"></div>
+      </div>
+      <div class="card"><h3>Emociones más frecuentes</h3><div id="emoChart"></div></div>
+      <div class="card"><h3>Lo que más me mueve (detonantes)</h3><div id="trigChart"></div></div>
+      <div class="card"><h3>Check-ins recientes</h3><div id="checkinList" class="list"></div></div>
     </section>
 
-    <!-- Respira -->
-    <section id="view-respira" class="view" hidden>
-      <h2>Respira conmigo</h2>
-      <p class="muted">Respiración 4‑7‑8: inhala 4 segundos, sostén 7, exhala 8. Cuatro ciclos bastan. Si te mareas, respira normal.</p>
-      <div class="breath-wrap">
-        <div class="breath-circle" id="breathCircle"><span id="breathText">Toca «Empezar»</span><small id="breathCount"></small></div>
+    <!-- ===== Calma ===== -->
+    <section id="view-calma" class="view" hidden>
+      <h2>Caja de calma</h2>
+      <p class="muted">Herramientas para cuando la ansiedad sube. Elige una, sin prisa.</p>
+      <div class="tool-grid">
+        <button class="tool" data-tool="urge"><span>🌊</span><b>Ganas de escribirle</b><small>Deja pasar la ola</small></button>
+        <button class="tool" data-tool="breath"><span>🌬️</span><b>Respirar</b><small>4‑7‑8, cuadrada, coherente</small></button>
+        <button class="tool" data-tool="ground"><span>🖐️</span><b>5‑4‑3‑2‑1</b><small>Volver al presente</small></button>
+        <button class="tool" data-tool="affirm"><span>💜</span><b>Afirmaciones</b><small>Palabras para ti</small></button>
       </div>
-      <div class="row center">
-        <button class="btn" id="breathStart">Empezar</button>
-        <button class="btn ghost" id="breathStop" hidden>Detener</button>
-      </div>
-      <div class="support card">
+      <p class="muted small center" id="urgeCount"></p>
+
+      <div class="support card" id="supportPanel">
         <h3>No estás sola, mi Cap. 🤍</h3>
         <p>Si sientes que no puedes con esto o tienes pensamientos de hacerte daño, por favor busca ayuda ahora:</p>
         <p class="hotline"><strong>Línea de la Vida</strong> (México, gratuita, 24 h)<br><a href="tel:8009112000" class="tel">📞 800 911 2000</a></p>
         <p>En una emergencia, llama al <a href="tel:911" class="tel-inline">911</a>.</p>
-        <p class="muted">También ayuda mucho hablar con alguien de tu confianza o con un profesional de salud mental (psicología o psiquiatría, incluida la atención que te corresponde por tu servicio de sanidad). Pedir apoyo también es valentía.</p>
+        <p class="muted">También ayuda mucho hablar con alguien de tu confianza o con un profesional de salud mental (psicología o psiquiatría, incluida la atención de sanidad que te corresponde). Pedir apoyo también es valentía.</p>
       </div>
     </section>
 
-    <!-- Más -->
+    <!-- ===== Galería ===== -->
+    <section id="view-galeria" class="view" hidden>
+      <div class="row between"><h2>Galería</h2><button class="btn ghost small" id="selectMode">Seleccionar</button></div>
+      <p class="muted small">Guarda aquí tus fotos para poder borrarlas de tu teléfono. <strong>Antes de borrarlas, haz y verifica un respaldo</strong> (⚙️ → Respaldo).</p>
+      <div class="row">
+        <select id="albumSel" aria-label="Álbum para las fotos nuevas"></select>
+        <button class="btn" id="addGalleryPhotos">➕ Agregar fotos</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="galleryCompress"> Comprimir (ahorra espacio; por defecto se guarda la original)</label>
+      <div class="chips scroll" id="albumFilters"></div>
+      <div id="selectBar" class="selectbar" hidden>
+        <span id="selCount">0 seleccionadas</span>
+        <button class="btn ghost small" id="selMove">Mover a álbum</button>
+        <button class="btn danger small" id="selDelete">Borrar</button>
+      </div>
+      <div id="galProgress" class="progress" hidden><div></div><span></span></div>
+      <p class="muted small" id="galleryCount"></p>
+      <div id="gallery" class="grid"></div>
+    </section>
+
+    <!-- ===== Más ===== -->
     <section id="view-mas" class="view" hidden>
       <h2>Respaldo</h2>
       <div class="card">
         <p id="backupStatus"></p>
+        <p id="backupEstimate" class="small"></p>
         <p id="storageInfo" class="muted small"></p>
+        <label class="toggle"><input type="checkbox" id="encryptBackup"> Proteger el respaldo con contraseña (cifrado AES)</label>
         <div class="row">
-          <button class="btn" id="exportBtn">⬇️ Exportar respaldo (.zip)</button>
+          <button class="btn" id="exportBtn">⬇️ Exportar respaldo</button>
+          <button class="btn ghost" id="verifyBtn">✅ Verificar un respaldo</button>
           <button class="btn ghost" id="importBtn">⬆️ Importar respaldo</button>
         </div>
         <div id="progress" class="progress" hidden><div></div><span></span></div>
-        <p class="muted small">El respaldo es un solo archivo .zip con todas tus entradas, audios y fotos en calidad original. Guárdalo en <strong>Archivos / iCloud Drive / Google Drive</strong>. No va cifrado: guárdalo en un lugar privado.</p>
+        <p class="muted small">Un solo archivo con todas tus entradas, check-ins, audios y fotos en calidad original. Guárdalo con <strong>«Guardar en Archivos» → iCloud Drive</strong> (o Google Drive): es independiente de tu galería de Fotos. Si no lo proteges con contraseña, guárdalo en un lugar privado.</p>
       </div>
-      <h2>Ayuda y guía</h2>
+
+      <h2>Mi proceso</h2>
+      <div class="card">
+        <label class="field">🌱 Días desde el cierre (opcional): fecha de inicio
+          <input type="date" id="ncDate"></label>
+        <p class="muted small">Cuenta los días que llevas cuidándote y celebra cada logro. Déjalo vacío si no lo quieres ver.</p>
+        <label class="toggle"><input type="checkbox" id="showMemories" checked> Mostrar «En este día» (recuerdos de entradas pasadas)</label>
+      </div>
+
+      <h2>Recordatorio para escribir</h2>
+      <div class="card">
+        <label class="field">Hora del recordatorio diario <input type="time" id="reminderTime"></label>
+        <p class="muted small">Si a esa hora no has escrito, la app te lo recordará con cariño al abrirla. Para recibir un aviso aunque la app esté cerrada, agrega un evento diario a tu calendario:</p>
+        <button class="btn ghost" id="icsBtn">📅 Agregar recordatorio al calendario (.ics)</button>
+      </div>
+
+      <h2>Apariencia</h2>
+      <div class="card">
+        <p class="small muted">Tema</p>
+        <div class="chips" id="themeChips"><button class="chip" data-theme="auto">Automático</button><button class="chip" data-theme="light">☀️ Claro</button><button class="chip" data-theme="dark">🌙 Oscuro</button></div>
+        <p class="small muted">Tamaño de letra</p>
+        <div class="chips" id="sizeChips"><button class="chip" data-size="s">A</button><button class="chip" data-size="m">A+</button><button class="chip" data-size="l">A++</button><button class="chip" data-size="xl">A+++</button></div>
+      </div>
+
+      <h2>Exportar</h2>
+      <div class="card">
+        <button class="btn ghost full" id="printBtn">🖨️ Exportar entradas a PDF / imprimir</button>
+      </div>
+
+      <h2>Ayuda</h2>
       <div class="card">
         <button class="btn ghost full" id="openGuide">📖 Guía: cómo usar, instalar y respaldar</button>
         <button class="btn ghost full" id="installBtn" hidden>📲 Instalar en este teléfono</button>
       </div>
+
       <h2>Seguridad</h2>
       <div class="card">
         <button class="btn ghost full" id="changePin">🔑 Cambiar PIN</button>
@@ -136,20 +230,32 @@
       <div class="card">
         <button class="btn danger full" id="wipeAll">🗑️ Borrar todo el diario de este teléfono</button>
       </div>
-      <p class="muted small center">Mi diario · todo se guarda solo en tu teléfono, sin cuentas ni servidores.</p>
+      <p class="muted small center" id="versionLabel">Mi diario · todo se guarda solo en tu teléfono, sin cuentas ni servidores.</p>
     </section>
   </main>
 
   <nav class="tabbar">
     <button data-view="inicio" class="active"><span>🏠</span>Inicio</button>
+    <button data-view="animo"><span>📊</span>Ánimo</button>
+    <button id="tabNew" class="tab-new" aria-label="Nuevo"><span>＋</span></button>
+    <button data-view="calma"><span>🌿</span>Calma</button>
     <button data-view="galeria"><span>🖼️</span>Galería</button>
-    <button id="tabNew" class="tab-new" aria-label="Nueva entrada"><span>＋</span></button>
-    <button data-view="respira"><span>🌬️</span>Respira</button>
-    <button data-view="mas"><span>⚙️</span>Más</button>
   </nav>
 </div>
 
-<!-- ===== Editor de entrada ===== -->
+<!-- ===== Menú ＋ ===== -->
+<dialog id="newMenu" class="small-dlg menu">
+  <p class="eyebrow">¿Qué quieres guardar, mi Cap.?</p>
+  <button class="menu-item" data-act="texto">✍️ <span><b>Escribir</b><small>Una entrada libre</small></span></button>
+  <button class="menu-item" data-act="checkin">💜 <span><b>Check-in de ánimo</b><small>Cómo me siento ahora</small></span></button>
+  <button class="menu-item" data-act="audio">🎙️ <span><b>Nota de voz</b><small>Cuando cuesta escribir</small></span></button>
+  <button class="menu-item" data-act="foto">📷 <span><b>Fotos</b><small>A una entrada</small></span></button>
+  <button class="menu-item" data-act="carta">✉️ <span><b>Carta que no se envía</b><small>Se queda solo aquí</small></span></button>
+  <button class="menu-item" data-act="prompt">💡 <span><b>Escribir con una idea</b><small>Preguntas guía</small></span></button>
+  <button class="btn ghost full" id="newMenuClose">Cerrar</button>
+</dialog>
+
+<!-- ===== Editor ===== -->
 <dialog id="editor" class="sheet">
   <form method="dialog" id="editorForm">
     <header class="sheet-head">
@@ -157,6 +263,8 @@
       <strong id="editorTitle">Nueva entrada</strong>
       <button type="button" class="link strong" id="editorSave">Guardar</button>
     </header>
+    <div id="cartaBanner" class="carta-banner" hidden>✉️ <b>Carta que NUNCA se envía.</b> Se queda solo en tu teléfono; esta app no tiene forma de mandarla a nadie. Escribe todo lo que necesites decir.</div>
+    <div id="promptBanner" class="prompt-banner" hidden></div>
     <p class="muted small" id="editorDate"></p>
     <div class="moods" id="moods" role="radiogroup" aria-label="¿Cómo te sientes?">
       <span class="muted small">¿Cómo te sientes? (opcional)</span>
@@ -165,9 +273,14 @@
     <input id="entryTitle" class="title-input" placeholder="Título (opcional)" maxlength="120">
     <textarea id="entryText" placeholder="Escribe lo que traigas en el corazón…" rows="7"></textarea>
     <div class="row">
+      <button type="button" class="btn ghost small" id="promptPickBtn">💡 Ideas</button>
       <button type="button" class="btn ghost small" id="dictateBtn" hidden>🗣️ Dictar (opcional)</button>
       <span class="muted small" id="dictateStatus"></span>
     </div>
+    <label class="field small">Etiquetas (separadas por coma)
+      <input id="entryTags" placeholder="ej. trabajo, familia, logro" autocomplete="off"></label>
+    <div class="chips" id="tagSuggest"></div>
+    <label class="toggle"><input type="checkbox" id="entryPinned"> ⭐ Marcar como favorita / fijar arriba</label>
 
     <div class="attach">
       <h4>🎙️ Audios</h4>
@@ -195,22 +308,84 @@
 <dialog id="viewer" class="sheet">
   <header class="sheet-head">
     <button type="button" class="link" id="viewerClose">Cerrar</button>
-    <strong>Entrada</strong>
+    <strong id="viewerHead">Entrada</strong>
     <button type="button" class="link" id="viewerEdit">Editar</button>
   </header>
   <div id="viewerBody"></div>
+  <div id="viewerHistory"></div>
+  <div class="row">
+    <button class="btn ghost" id="viewerPin">⭐ Favorita</button>
+    <button class="btn ghost" id="viewerRelease" hidden>🕊️ Soltar esta carta</button>
+  </div>
   <button class="btn danger full" id="viewerDelete">🗑️ Borrar esta entrada</button>
 </dialog>
+
+<!-- ===== Check-in ===== -->
+<dialog id="checkin" class="sheet">
+  <header class="sheet-head">
+    <button type="button" class="link" id="ciCancel">Cancelar</button>
+    <strong>Check-in de ánimo</strong>
+    <button type="button" class="link strong" id="ciSave">Guardar</button>
+  </header>
+  <p class="muted small" id="ciDate"></p>
+  <h4>1. En general, ¿cómo estás?</h4>
+  <div class="score-row" id="ciScore"></div>
+  <h4>2. ¿Qué emociones sientes? <span class="muted small">(toca la rueda)</span></h4>
+  <div class="wheel-wrap"><svg id="wheel" viewBox="-110 -110 220 220" aria-label="Rueda de emociones"></svg></div>
+  <div class="chips" id="ciSub"></div>
+  <div class="chips" id="ciChosen"></div>
+  <h4>3. ¿Con qué intensidad? <b id="ciIntVal">5</b>/10</h4>
+  <input type="range" id="ciIntensity" min="1" max="10" value="5" class="range">
+  <h4>4. ¿Qué lo detonó? <span class="muted small">(opcional)</span></h4>
+  <div class="chips" id="ciTriggers"></div>
+  <input id="ciTriggerOther" class="title-input" placeholder="Otro detonante (opcional)" maxlength="60">
+  <textarea id="ciNote" rows="3" placeholder="Una nota corta (opcional)"></textarea>
+</dialog>
+
+<!-- ===== Día del calendario ===== -->
+<dialog id="dayDlg" class="sheet">
+  <header class="sheet-head"><span></span><strong id="dayTitle" class="cap"></strong><button class="link" id="dayClose">Cerrar</button></header>
+  <div id="dayBody"></div>
+</dialog>
+
+<!-- ===== Herramienta de calma ===== -->
+<dialog id="toolDlg" class="sheet">
+  <header class="sheet-head"><span></span><strong id="toolTitle"></strong><button class="link" id="toolClose">Cerrar</button></header>
+  <div id="toolBody"></div>
+</dialog>
+
+<!-- ===== Ideas ===== -->
+<dialog id="promptsDlg" class="sheet">
+  <header class="sheet-head"><span></span><strong>Ideas para escribir</strong><button class="link" id="promptsClose">Cerrar</button></header>
+  <div id="promptsBody"></div>
+</dialog>
+
+<!-- ===== Imprimir ===== -->
+<dialog id="printDlg" class="small-dlg">
+  <h3>Exportar a PDF / imprimir</h3>
+  <label class="field small">Desde <input type="date" id="prFrom"></label>
+  <label class="field small">Hasta <input type="date" id="prTo"></label>
+  <label class="toggle"><input type="checkbox" id="prPhotos" checked> Incluir fotos</label>
+  <label class="toggle"><input type="checkbox" id="prCartas" checked> Incluir cartas que no se envían</label>
+  <label class="toggle"><input type="checkbox" id="prCheckins"> Incluir check-ins de ánimo</label>
+  <p class="muted small">Se abrirá la ventana de impresión. En iPhone: elige «Imprimir» y luego toca Compartir → «Guardar en Archivos» para obtener el PDF.</p>
+  <div class="row end"><button class="btn ghost" id="prCancel">Cancelar</button><button class="btn" id="prGo">Generar</button></div>
+</dialog>
+<div id="printArea"></div>
 
 <!-- ===== Ver foto ===== -->
 <dialog id="photoViewer" class="photo-viewer">
   <img id="photoBig" alt="">
   <div class="pv-bar">
-    <span id="photoInfo" class="small"></span>
+    <input id="photoCaption" class="caption-input" placeholder="Escribe una descripción (opcional)" maxlength="300">
+    <div class="row">
+      <select id="photoAlbum" aria-label="Álbum"></select>
+      <span id="photoInfo" class="small"></span>
+    </div>
     <div class="row">
       <button class="btn ghost small" id="photoDownload">⬇️ Descargar</button>
       <button class="btn danger small" id="photoDelete">🗑️ Borrar</button>
-      <button class="btn small" id="photoClose">Cerrar</button>
+      <button class="btn small" id="photoClose">Listo</button>
     </div>
   </div>
 </dialog>
@@ -221,12 +396,7 @@
     <span></span><strong>Guía rápida</strong>
     <button type="button" class="link" id="guideClose">Cerrar</button>
   </header>
-  <div class="chips" id="guideTabs">
-    <button class="chip active" data-g="usar">Usar</button>
-    <button class="chip" data-g="iphone">Instalar iPhone</button>
-    <button class="chip" data-g="android">Instalar Android</button>
-    <button class="chip" data-g="respaldo">Respaldo</button>
-  </div>
+  <div class="chips scroll" id="guideTabs"></div>
   <div class="guide-steps" id="guideSteps"></div>
   <div class="row between">
     <button class="btn ghost" id="guidePrev">← Anterior</button>
@@ -235,10 +405,11 @@
   </div>
 </dialog>
 
-<!-- ===== Confirmar / avisos ===== -->
+<!-- ===== Confirmar / pedir dato ===== -->
 <dialog id="confirmDlg" class="small-dlg">
   <p id="confirmMsg"></p>
   <input id="confirmInput" hidden autocomplete="off">
+  <input id="confirmInput2" hidden autocomplete="off">
   <div class="row end">
     <button class="btn ghost" id="confirmNo">Cancelar</button>
     <button class="btn" id="confirmYes">Sí</button>
@@ -248,9 +419,11 @@
 
 <input type="file" id="fileAudio" accept="audio/*" multiple hidden>
 <input type="file" id="filePhotos" accept="image/*" multiple hidden>
-<input type="file" id="fileBackup" accept=".zip,application/zip" hidden>
+<input type="file" id="fileBackup" hidden>
 
 <script src="zip.js"></script>
+<script src="content.js"></script>
 <script src="app.js"></script>
+<script src="wellbeing.js"></script>
 </body>
 </html>

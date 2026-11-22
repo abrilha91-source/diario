@@ -22,7 +22,7 @@
       lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
       lh.setUint16(10, now.time, true); lh.setUint16(12, now.date, true); lh.setUint32(14, crc, true);
       lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
-      parts.push(lh.buffer, name, u8);
+      parts.push(lh.buffer, name, (f.data instanceof Blob) ? f.data : u8);
       const ch = new DataView(new ArrayBuffer(46));
       ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
       ch.setUint16(12, now.time, true); ch.setUint16(14, now.date, true); ch.setUint32(16, crc, true);
@@ -47,10 +47,10 @@
     if (eocd < 0) throw new Error('No parece un archivo .zip válido.');
     const count = tail.getUint16(eocd + 10, true), cdSize = tail.getUint32(eocd + 12, true), cdOff = tail.getUint32(eocd + 16, true);
     const cd = new DataView(await blob.slice(cdOff, cdOff + cdSize).arrayBuffer());
-    const dec = new TextDecoder(); const out = new Map(); let p = 0;
+    const dec = new TextDecoder(); const out = new Map(); out.info = new Map(); let p = 0;
     for (let i = 0; i < count; i++) {
       if (cd.getUint32(p, true) !== 0x02014b50) throw new Error('ZIP dañado.');
-      const method = cd.getUint16(p + 10, true), csize = cd.getUint32(p + 20, true);
+      const method = cd.getUint16(p + 10, true), crc = cd.getUint32(p + 16, true), csize = cd.getUint32(p + 20, true), usize = cd.getUint32(p + 24, true);
       const nlen = cd.getUint16(p + 28, true), xlen = cd.getUint16(p + 30, true), clen = cd.getUint16(p + 32, true), loff = cd.getUint32(p + 42, true);
       const name = dec.decode(new Uint8Array(cd.buffer, cd.byteOffset + p + 46, nlen));
       p += 46 + nlen + xlen + clen;
@@ -62,7 +62,7 @@
         if (typeof DecompressionStream === 'undefined') throw new Error('Este navegador no puede leer ZIP comprimidos. Usa el respaldo tal como lo exportó la app.');
         data = await new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob();
       } else if (method !== 0) throw new Error('Formato de compresión no compatible.');
-      out.set(name, data);
+      out.set(name, data); out.info.set(name, { crc, size: usize });
     }
     return out;
   }
